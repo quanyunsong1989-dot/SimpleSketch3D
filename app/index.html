@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SimpleSketch 3D</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">{ "imports": { "three": "./lib/three.module.js", "three/addons/": "./lib/addons/" } }</script>
+</head>
+<body>
+<div id="app">
+  <div id="menubar"></div>
+  <div id="toolbar"></div>
+  <div id="main">
+    <div id="tools"></div>
+    <div id="tools-resizer" class="resizer" title="끌어서 도구판 넓히기/좁히기 (두 번 클릭 = 처음대로, 오른쪽 클릭 = 도구 고르기)"></div>
+    <div id="center">
+      <div id="scenetabs"></div>
+      <div id="viewport">
+        <canvas id="c"></canvas>
+        <div id="labels"></div>
+        <div id="snap" class="snap"></div>
+        <div id="tip" class="tip"></div>
+        <div id="selbox"></div>
+        <div id="crumbs"></div>
+        <div id="toasts"></div>
+      </div>
+    </div>
+    <div id="tray-resizer" class="resizer" title="끌어서 패널 넓히기/좁히기 (두 번 클릭 = 처음대로)"></div>
+    <div id="tray"></div>
+  </div>
+  <div id="statusbar">
+    <span id="hint"></span>
+    <button id="units-btn"></button>
+    <div id="vcb" title="숫자를 바로 치고 Enter (클릭할 필요 없음)"><span id="vcb-label">길이</span><span id="vcb-value"></span></div>
+  </div>
+</div>
+<div id="modal"></div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

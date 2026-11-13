@@ -1,0 +1,25 @@
+{
+  "name": "simplesketch3d",
+  "productName": "SimpleSketch 3D",
+  "version": "1.5.0",
+  "description": "Free 3D modeling app (push/pull) with SketchUp file support",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/kernel.test.mjs && node test/ops.test.mjs && node test/solid.test.mjs",
+    "build:public": "node build.js --public",
+    "i18n:check": "node tools/i18n-check.js"
+  },
+  "dependencies": {
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@electron/packager": "^18.3.6",
+    "acorn": "8.15.0",
+    "acorn-walk": "8.3.4",
+    "electron": "^33.2.1"
+  },
+  "author": "SimpleSketch 3D contributors",
+  "license": "MIT"
+}
