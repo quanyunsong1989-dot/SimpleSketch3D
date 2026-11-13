@@ -8,7 +8,7 @@
 
 <p><img src="docs/render-night.jpg" width="49%" alt="Rendering at night with lamps"> <img src="docs/render-day.jpg" width="49%" alt="Rendering in daylight"></p>
 
-*Rendered in the app with one click (F9) — the same room at night (lamps, downlights, wall sconce, cove LED) and by day. The model is included as `samples/lighting-living-room.s3d`.*
+*Rendered in the app with one click (F9) — the same room at night (lamps, downlights, wall sconce, cove LED) and by day. The model comes with the download as `samples/lighting-living-room.s3d` (in this repository: `public/samples`).*
 
 > ⚠️ **SketchUp `.skp` files are not supported yet.** This version cannot open or save `.skp` files. Support is planned for a later update once Trimble (the maker of SketchUp) approves the use of its SDK. Until then, export **DAE** from SketchUp and use **File → Import**.
 >
