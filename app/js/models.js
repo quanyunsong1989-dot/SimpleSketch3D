@@ -131,12 +131,13 @@ export const MORE = [
   {
     key: 'floor-lamp', name: tr('스탠드 조명'), cat: tr('조명·소품'),
     build(E, M) {
-      const k = M('blacksteel'), sh = M('linen');
+      const k = M('blacksteel'), sh = M('lampshade');
       rod(E, V(230, 230, 0), V(230, 230, 22), 170, 160, k, { seg: 48 });
       rod(E, V(230, 230, 22), V(230, 230, 1500), 11, 11, k, { seg: 12 });
       rod(E, V(230, 230, 1340), V(230, 230, 1680), 230, 170, sh, { seg: 48, open: true, back: sh });
-      ellipsoid(E, V(230, 230, 1460), 50, 50, 60, M('cream'));
+      ellipsoid(E, V(230, 230, 1460), 50, 50, 60, M('bulb'));
     },
+    lights: [{ t: 'point', p: [230, 230, 1512], lm: 1000, k: 2700, r: 45 }],      // 기둥 끝(1500) 위, 전구 알 안
   },
   {
     key: 'pendant', name: tr('펜던트 조명 (천장)'), cat: tr('조명·소품'), desc: tr('원점이 천장에 붙는 곳. 천장 면에 대고 놓아'),
@@ -144,16 +145,65 @@ export const MORE = [
       rod(E, V(0, 0, -25), V(0, 0, 0), 70, 70, M('white'), { seg: 32 });
       rod(E, V(0, 0, -700), V(0, 0, -25), 3, 3, M('black'), { seg: 8 });
       lathe(E, V(0, 0, -950), [[0, 250], [40, 250], [75, 238], [150, 175], [200, 70], [216, 0], [204, 0], [188, 66], [140, 165], [68, 228], [0, 238]], M('blacksteel'), { seg: 48 });
-      ellipsoid(E, V(0, 0, -930), 55, 55, 60, M('cream'));
+      ellipsoid(E, V(0, 0, -930), 55, 55, 60, M('bulb'));
     },
+    lights: [{ t: 'point', p: [0, 0, -925], lm: 1000, k: 2700, r: 45 }],
   },
   {
     key: 'table-lamp', name: tr('테이블 조명'), cat: tr('조명·소품'),
     build(E, M) {
       lathe(E, V(170, 170, 0), [[0, 0], [80, 0], [105, 60], [98, 180], [45, 250], [18, 275], [0, 275]], M('white'), { seg: 36 });
       rod(E, V(170, 170, 275), V(170, 170, 320), 8, 8, M('gold'), { seg: 8 });
-      rod(E, V(170, 170, 290), V(170, 170, 500), 170, 130, M('linen'), { seg: 48, open: true, back: M('linen') });
+      rod(E, V(170, 170, 290), V(170, 170, 500), 170, 130, M('lampshade'), { seg: 48, open: true, back: M('lampshade') });
+      ellipsoid(E, V(170, 170, 395), 32, 32, 40, M('bulb'));
     },
+    lights: [{ t: 'point', p: [170, 170, 400], lm: 450, k: 2700, r: 30 }],
+  },
+  // 천장·벽에 다는 조명 (렌더링에서 빛을 냄)
+  {
+    key: 'downlight', name: tr('매입 다운라이트 (천장)'), cat: tr('조명·소품'), desc: tr('원점이 천장에 붙는 곳. 천장 면에 대고 놓아'),
+    build(E, M) {
+      rod(E, V(0, 0, -4), V(0, 0, 0), 60, 60, M('white'), { seg: 40 });
+      rod(E, V(0, 0, -6.5), V(0, 0, -4.5), 42, 42, M('led-warm'), { seg: 32 });
+    },
+    lights: [{ t: 'spot', p: [0, 0, -9], d: [0, 0, -1], lm: 700, k: 3000, a: 90, r: 30 }],
+  },
+  {
+    key: 'panel-light', name: tr('LED 평판 조명 600×600 (방등)'), cat: tr('조명·소품'), desc: tr('원점이 천장에 붙는 곳. 천장 면에 대고 놓아'),
+    build(E, M) {
+      rbox(E, -300, -300, -14, 300, 300, 0, 3, M('white'));
+      box(E, -285, -285, -16, 285, 285, -14.5, M('led-white'));
+    },
+    lights: [{ t: 'rect', p: [0, 0, -18], d: [0, 0, -1], u: [1, 0, 0], w: 570, h: 570, lm: 3600, k: 5000 }],
+  },
+  {
+    key: 'bulb-pendant', name: tr('전구 펜던트 (노출 전구)'), cat: tr('조명·소품'), desc: tr('원점이 천장에 붙는 곳. 천장 면에 대고 놓아'),
+    build(E, M) {
+      const k = M('black');
+      rod(E, V(0, 0, -18), V(0, 0, 0), 45, 45, k, { seg: 32 });
+      rod(E, V(0, 0, -600), V(0, 0, -18), 3, 3, k, { seg: 8 });
+      rod(E, V(0, 0, -680), V(0, 0, -600), 18, 16, M('gold'), { seg: 24 });
+      ellipsoid(E, V(0, 0, -745), 55, 55, 68, M('bulb'));
+    },
+    lights: [{ t: 'point', p: [0, 0, -745], lm: 800, k: 2700, r: 45 }],
+  },
+  {
+    key: 'wall-sconce', name: tr('벽등 (위아래로 비춤)'), cat: tr('조명·소품'), desc: tr('벽에 대면 벽에 붙어. 원점 = 등 아래쪽'),
+    build(E, M) {
+      const k = M('blacksteel');
+      box(E, -45, -12, 70, 45, 0, 170, k);
+      rod(E, V(0, -80, 0), V(0, -80, 240), 60, 60, k, { seg: 40, open: true, back: k });
+      box(E, -10, -25, 110, 10, -12, 130, k);
+    },
+    lights: [{ t: 'spot', p: [0, -80, 150], d: [0, 0, 1], lm: 300, k: 2700, a: 70, r: 22 }, { t: 'spot', p: [0, -80, 90], d: [0, 0, -1], lm: 300, k: 2700, a: 70, r: 22 }],
+  },
+  {
+    key: 'led-bar', name: tr('간접조명 LED 바 1200 (위로 비춤)'), cat: tr('조명·소품'), desc: tr('커튼박스·선반 위에 두면 천장을 은은하게 비춰. 돌리면 벽 쪽으로도'),
+    build(E, M) {
+      box(E, 0, 0, 0, 1200, 22, 12, M('alu-dark'));
+      box(E, 4, 5, 12.5, 1196, 17, 14, M('led-warm'));
+    },
+    lights: [{ t: 'rect', p: [600, 11, 16], d: [0, 0, 1], u: [1, 0, 0], w: 1190, h: 12, lm: 1000, k: 3000 }],
   },
   {
     key: 'plant-monstera', name: tr('화분 (몬스테라)'), cat: tr('조명·소품'),

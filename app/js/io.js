@@ -315,7 +315,7 @@ function insertModel(app, src, name, label) {
     // 넣는 파일의 번호(정의·재질·태그)를 이 모델 번호로 바꿔서 옮김
     app.model.nextId = Math.max(app.model.nextId, src.nextId + 10);
     const def = app.model.newDef(name, false);
-    const ad = adoptForeign(app.model, [...src.defs.values()].map((d) => ({ id: d.id, name: d.name, isGroup: d.isGroup, desc: d.desc, lib: d.lib, ents: d.ents.toJSON() })), [...src.materials.values()], src.layers);
+    const ad = adoptForeign(app.model, [...src.defs.values()].map((d) => ({ id: d.id, name: d.name, isGroup: d.isGroup, desc: d.desc, lib: d.lib, lights: d.lights, ents: d.ents.toJSON() })), [...src.materials.values()], src.layers);
     def.ents.load(src.root.toJSON());
     def.ents.sections.clear();
     ad.fix(def.ents);

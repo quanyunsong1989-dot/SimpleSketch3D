@@ -59,6 +59,7 @@ export const ICONS = {
   shaded: S(`<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" fill="#9fb4c8"/><path d="M4 7.5l8 4.5 8-4.5-8-4.5z" fill="#d7e2ec"/><path d="M12 12v9l8-4.5v-9z" fill="#7f97ad"/>`),
   textured: S(`<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" fill="#c79c68"/><path d="M4 7.5l8 4.5 8-4.5-8-4.5z" fill="#e2c49b"/><path d="M12 12v9l8-4.5v-9z" fill="#a47a48"/><path d="M6 11l4 2M6 14l4 2M14 13l4-2M14 16l4-2" stroke-width="1"/>`),
   mono: S(`<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" fill="#fff"/><path d="M12 12v9l8-4.5v-9z" fill="#a4b2bb"/><path d="M4 7.5l8 4.5 8-4.5"/>`),
+  render: S(`<rect x="2.5" y="7.5" width="15" height="11" rx="2" fill="${B}" fill-opacity=".2"/><circle cx="10" cy="13" r="3.2" fill="#fff"/><path d="M6.5 7.5l1.5-2.5h4l1.5 2.5"/><path d="M20 2.5v5M17.5 5h5" stroke="${O}" stroke-width="1.7"/><path d="M20.5 11v3M19 12.5h3" stroke="${O}"/>`),
   shadow: S(`<circle cx="16" cy="7" r="3.2" fill="${Y}" stroke="${O}"/><path d="M3 18l6-3 6 3-6 3z" fill="currentColor" fill-opacity=".35"/><path d="M6 15V9h6v6"/>`),
   sectioncut: S(`<path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M12 4v16" stroke="${O}" stroke-width="2.2"/>`),
   prev: S(`<path d="M10 6l-6 6 6 6"/><path d="M4 12h12a4 4 0 0 1 0 8"/>`),

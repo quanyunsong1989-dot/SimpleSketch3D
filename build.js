@@ -67,10 +67,15 @@ function copyDir(a, b, filter) {
   fs.mkdirSync(LIC, { recursive: true });
   fs.renameSync(path.join(OUT, 'LICENSE'), path.join(LIC, 'electron-LICENSE.txt'));
   fs.copyFileSync(path.join(SRC, 'node_modules', 'three', 'LICENSE'), path.join(LIC, 'three.js-LICENSE.txt'));
+  // 렌더링 창이 쓰는 것 (app/lib/rt)
+  const RT = path.join(SRC, 'app', 'lib', 'rt');
+  for (const [src, name] of [['three/LICENSE', 'three.js-r187-LICENSE.txt'], ['three-gpu-pathtracer/LICENSE', 'three-gpu-pathtracer-LICENSE.txt'], ['three-mesh-bvh/LICENSE', 'three-mesh-bvh-LICENSE.txt'], ['oidn/LICENSE', 'oidn-webgpu-LICENSE.txt'], ['oidn/WEIGHTS-LICENSE.txt', 'open-image-denoise-weights-LICENSE.txt']]) fs.copyFileSync(path.join(RT, src), path.join(LIC, name));
   if (skpPack) skpPack.resources(OUT, LIC);
   fs.copyFileSync(path.join(P, 'LICENSE'), path.join(OUT, 'LICENSE.txt'));
   fs.copyFileSync(path.join(P, 'THIRD-PARTY-NOTICES.md'), path.join(OUT, 'THIRD-PARTY-NOTICES.md'));
   fs.copyFileSync(path.join(P, 'README.txt'), path.join(OUT, 'README.txt'));
+  // 예제 모델 (조명 넣은 거실)
+  if (fs.existsSync(path.join(P, 'samples'))) copyDir(path.join(P, 'samples'), path.join(OUT, 'samples'));
   console.log(OUT);
   if (PUBLIC) {
     // 올릴 zip (윈도우 기본 tar로 묶음). 폴더 이름째 들어가게

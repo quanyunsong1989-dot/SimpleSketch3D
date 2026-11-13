@@ -817,6 +817,9 @@ const PROPS = {
   boucle: { fin: 'boucle', rough: 1, sheen: 0.4 },
   leather: { fin: 'leather', rough: 0.45 }, 'leather-black': { fin: 'leather', rough: 0.45 }, 'leather-cognac': { fin: 'leather', rough: 0.45 },
   'carpet-gray': { fin: 'carpet', rough: 1, sheen: 0.3 },
+  // 조명: emit = 빛 내는 밝기(cd/m²), trans = 뒤에서 오는 빛이 비치는 정도 (렌더링에서)
+  bulb: { emit: 4000, rough: 0.3 }, 'led-white': { emit: 2500, rough: 0.35 }, 'led-warm': { emit: 2500, rough: 0.35 },
+  lampshade: { slub: 1, trans: 0.45, rough: 0.9 }, acrylic: { trans: 0.6, rough: 0.6 },
 };
 
 // 기본 재질 목록. tex는 무늬 함수, texW/texH는 무늬 한 장의 실제 크기(mm)
@@ -957,6 +960,13 @@ export const LIBRARY = [
     { key: 'rattan', name: tr('라탄'), color: '#c9a46b', tex: G.rattan('#c9a46b', '#6b5132'), texW: 300, texH: 300 },
     { key: 'carpet-gray', name: tr('카펫 (회색)'), color: '#7b7e82', tex: G.speckle('#7b7e82', ['#696c70', '#8d9094', '#5d6064'], 50000, 127, 2), texW: 500, texH: 500 },
   ] },
+  { cat: tr('조명'), items: [
+    { key: 'bulb', name: tr('전구 (빛 냄)'), color: '#fff1d6' },
+    { key: 'led-white', name: tr('LED 빛 (흰색, 빛 냄)'), color: '#f6f8ff' },
+    { key: 'led-warm', name: tr('LED 빛 (따뜻한 색, 빛 냄)'), color: '#fff0d8' },
+    { key: 'lampshade', name: tr('조명 갓 (린넨, 빛 비침)'), color: '#efe6d3', tex: G.fabric('#efe6d3', 131), texW: 250, texH: 250 },
+    { key: 'acrylic', name: tr('아크릴 확산판 (빛 비침)'), color: '#f7f7f4' },
+  ] },
 ];
 
 // ---------- 굽기: 칸마다 정한 색·높이·거칠기 → 그림 세 장 (색, 요철, 거칠기) ----------
@@ -1014,6 +1024,8 @@ export function libPBR(it) {
     rough: o.rough ?? o.r ?? FIN[o.fin ?? pbr.fin]?.r ?? pbr.rough ?? (it.tex ? 0.8 : 0.85),
     metal: o.metal ?? pbr.metal ?? 0,
     sheen: o.sheen ?? pbr.sheen ?? 0,
+    emit: o.emit ?? 0,
+    trans: o.trans ?? 0,
   };
 }
 
@@ -1111,6 +1123,6 @@ export function tidyMaterial(m) {
 // 재질 기록의 빛 반응 (따로 정하지 않았으면 기본 재질의 값)
 export function matPBR(m) {
   const it = m && m.lib ? libItem(m.lib) : null, p = it ? libPBR(it) : null;
-  return { rough: m.rough ?? p?.rough ?? (m.tex ? 0.7 : 0.8), metal: m.metal ?? p?.metal ?? 0, sheen: p?.sheen ?? 0 };
+  return { rough: m.rough ?? p?.rough ?? (m.tex ? 0.7 : 0.8), metal: m.metal ?? p?.metal ?? 0, sheen: p?.sheen ?? 0, emit: m.emit ?? p?.emit ?? 0, trans: m.trans ?? p?.trans ?? 0 };
 }
 export const _bake = { SZ, bakeItem, thumbPixels };

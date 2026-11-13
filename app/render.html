@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SimpleSketch 3D</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="render.css">
+<!-- 렌더링 창은 모델 창과 따로 된 three(WebGPU 판, lib/rt)를 쓴다 -->
+<script type="importmap">{ "imports": {
+  "three": "./lib/rt/three/three.module.js",
+  "three/webgpu": "./lib/rt/three/three.webgpu.js",
+  "three/tsl": "./lib/rt/three/three.tsl.js",
+  "three/addons/": "./lib/rt/three/addons/",
+  "three/examples/jsm/": "./lib/rt/three/addons/",
+  "three-mesh-bvh": "./lib/rt/three-mesh-bvh/src/index.js",
+  "three-mesh-bvh/webgpu": "./lib/rt/three-mesh-bvh/src/webgpu/index.js",
+  "three-gpu-pathtracer/webgpu": "./lib/rt/three-gpu-pathtracer/src/webgpu/index.js",
+  "oidn-webgpu": "./lib/rt/oidn/oidn.js"
+} }</script>
+</head>
+<body>
+<div id="rt">
+  <div id="rt-bar"></div>
+  <div id="rt-view"><canvas id="rt-c"></canvas><div id="rt-msg"></div></div>
+  <div id="rt-status"><span id="rt-text"></span><div id="rt-prog"><div id="rt-prog-fill"></div></div><span id="rt-hint"></span></div>
+</div>
+<script type="module" src="js/rtwindow.js"></script>
+</body>
+</html>

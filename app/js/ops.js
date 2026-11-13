@@ -514,6 +514,7 @@ export function adoptForeign(model, defs = [], mats = [], layers = []) {
     const nd = model.newDef(d.name, d.isGroup);
     nd.desc = d.desc || '';
     nd.lib = d.lib || '';
+    if (d.lights) nd.lights = JSON.parse(JSON.stringify(d.lights));
     defMap.set(d.id, nd.id);
     made.push([nd, d]);
   }

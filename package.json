@@ -1,7 +1,7 @@
 {
   "name": "simplesketch3d",
   "productName": "SimpleSketch 3D",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Free 3D modeling app (push/pull) with SketchUp file support",
   "main": "main.js",
   "private": true,

@@ -15,6 +15,7 @@ SimpleSketch 3D - free 3D modeling for Windows
 .skp(스케치업) 파일: 아직 안 됨 - Trimble 승인 뒤 업데이트 예정. 지금은 DAE로 주고받아 줘.
 .skp（SketchUp）ファイル: まだ非対応 - Trimble の承認後のアップデートで対応予定。今は DAE をご利用ください。
 .skp（SketchUp）文件：暂不支持 - 获得 Trimble 批准后通过更新加入。目前请使用 DAE。
+Sample / 예제 / サンプル / 示例: samples\lighting-living-room.s3d  -> Render (F9) -> Day / Evening / Night
 Feedback: https://github.com/quanyunsong1989-dot/SimpleSketch3D/issues
 
 License: MIT (LICENSE.txt). Third-party licenses: THIRD-PARTY-NOTICES.md, licenses folder.

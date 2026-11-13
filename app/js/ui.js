@@ -8,9 +8,11 @@ import { DEFAULT_FRONT, DEFAULT_BACK } from './render.js';
 import { fmtVol } from './units.js';
 import * as IO from './io.js';
 import { tr, trc, LANG, LANGS, setLang } from './i18n.js';
+import { openRender } from './rtscene.js';
+import { defLights, instLight, defKelvin, TEMPS } from './lights.js';
 
 const V3 = THREE.Vector3;
-const VERSION = '1.5';
+const VERSION = '1.6';
 const AUTHOR = 'SimpleSketch 3D contributors';   // 공개할 때 쓰는 이름 (실명 대신)
 const $ = (s, el = document) => el.querySelector(s);
 const h = (tag, attrs = {}, ...kids) => {
@@ -125,6 +127,7 @@ export class UI {
       closegroup: { label: tr('그룹 편집 닫기'), run: () => a.exitGroup() },
       explode: { label: tr('분해'), run: () => a.explodeCmd() },
       merge: { label: tr('합치기'), run: () => a.mergeCmd() },
+      render: { label: tr('렌더링 (사진처럼)…'), key: 'F9', run: () => openRender(a) },
       unique: { label: tr('고유하게 만들기'), run: () => a.makeUniqueCmd() },
       lock: { label: tr('잠그기'), run: () => this.setLock(true) },
       unlock: { label: tr('잠금 풀기'), run: () => this.setLock(false) },
@@ -190,7 +193,7 @@ export class UI {
       purge: { label: tr('안 쓰는 것 지우기'), run: () => { let n = 0; a.commit(tr('정리'), () => { n = a.model.purge(true); }); this.toast(tr`${n}개 정리했어`); } },
       shortcuts: { label: tr('단축키'), run: () => this.showShortcuts() },
       howto: { label: tr('간단 사용법'), run: () => this.showHowto() },
-      about: { label: tr('SimpleSketch 3D 정보'), run: async () => { const skp = await IO.skpAvailable(); this.alert(tr('SimpleSketch 3D'), tr`무료 3D 모델링 프로그램 ${VERSION}\n\n파일: .s3d (SimpleSketch 3D)\n가져오기: DAE·OBJ·STL·glTF·DXF·그림\n내보내기: DAE·OBJ·STL·GLB·DXF·PNG\n${skp ? tr('.skp 열기·저장: 됨 (Trimble SketchUp SDK 사용)') : tr('.skp 열기·저장: 준비 중 (Trimble 승인을 기다리는 중, 나중에 업데이트)')}\n\n만든 사람: ${AUTHOR}\n오픈소스 (MIT 라이선스). three.js·Electron 사용\nSketchUp은 Trimble Inc.의 상표이며, SimpleSketch 3D는 Trimble과 관계없는 독립 프로그램이야`); } },
+      about: { label: tr('SimpleSketch 3D 정보'), run: async () => { const skp = await IO.skpAvailable(); this.alert(tr('SimpleSketch 3D'), tr`무료 3D 모델링 프로그램 ${VERSION}\n\n파일: .s3d (SimpleSketch 3D)\n가져오기: DAE·OBJ·STL·glTF·DXF·그림\n내보내기: DAE·OBJ·STL·GLB·DXF·PNG\n렌더링: 사진처럼 (빛 추적 + 노이즈 제거, F9)\n${skp ? tr('.skp 열기·저장: 됨 (Trimble SketchUp SDK 사용)') : tr('.skp 열기·저장: 준비 중 (Trimble 승인을 기다리는 중, 나중에 업데이트)')}\n\n만든 사람: ${AUTHOR}\n오픈소스 (MIT 라이선스). three.js·Electron·three-gpu-pathtracer·Open Image Denoise 사용\nSketchUp은 Trimble Inc.의 상표이며, SimpleSketch 3D는 Trimble과 관계없는 독립 프로그램이야`); } },
       feedback: { label: tr('의견 보내기 (GitHub)'), run: () => window.open('https://github.com/quanyunsong1989-dot/SimpleSketch3D/issues') },
       ...Object.fromEntries(LANGS.map(([code, name]) => ['lang-' + code, { label: name, check: () => LANG === code, run: () => this.changeLang(code) }])),
       devtools: { label: tr('개발자 도구'), key: 'F12', run: () => window.native && window.native.toggleDevTools() },
@@ -227,6 +230,7 @@ export class UI {
     this.buildToolbar();
     this.buildTools();
     this.setupResizers();
+    if (window.native && window.native.onRenderRequest) window.native.onRenderRequest(() => openRender(this.app));
     this.applyLayout();
     this.buildTray();
     this.buildStatus();
@@ -238,7 +242,7 @@ export class UI {
       [tr('파일'), ['new', 'open', { label: tr('최근 파일'), sub: recent.length ? recent : [{ label: tr('(없음)'), disabled: true }] }, 'autosave', '-', 'save', 'saveas', '-', 'import', { label: tr('내보내기'), sub: ['export-skp', 'export-dae', 'export-obj', 'export-stl', 'export-glb', 'export-dxf', '-', 'export-png', 'export-jpg'] }, '-', 'quit']],
       [tr('편집'), ['undo', 'redo', '-', 'cut', 'copy', 'paste', 'pasteinplace', 'erase', 'eraseguides', '-', 'selectall', 'selectnone', { label: tr('고르기'), sub: ['sel-connected', 'sel-material', 'sel-layer', 'sel-instances', 'sel-faces', 'sel-edges'] }, '-', 'hide', { label: tr('숨기기 해제'), sub: ['unhide-sel', 'unhide-last', 'unhide-all'] }, '-', 'makegroup', 'component', 'closegroup', 'merge', 'explode', 'unique', 'lock', 'unlock', '-', 'reverse', 'orient', { label: tr('교차'), sub: ['intersect-model', 'intersect-sel', 'intersect-context'] }, 'soften', 'unsoften']],
       [tr('보기'), ['hiddengeom', 'sectionplanes', 'sectioncuts', 'axes', 'guides', 'shadows', 'fog', 'ground', '-', 'scene-add', 'scene-play', '-', { label: tr('면 스타일'), sub: ['face-wire', 'face-hidden', 'face-shaded', 'face-textured', 'face-mono', '-', 'xray'] }, { label: tr('선 스타일'), sub: ['edges', 'profiles', 'backedges'] }, '-', { label: tr('화면 크기'), sub: ['zoom-in', 'zoom-out', 'zoom-reset'] }, { label: tr('도구판'), sub: ['tools-pick', '-', 'iconsize-s', 'iconsize-m', 'iconsize-l', 'iconsize-xl', '-', 'tools-wider', 'tools-narrower', '-', 'tools-reset'] }, 'toggle-tools', 'toggle-tray']],
-      [tr('카메라'), ['prevview', { label: tr('표준 보기'), sub: ['iso', 'top', 'bottom', 'front', 'back', 'left', 'right'] }, '-', 'ortho', 'persp', 'fov', '-', 'orbit', 'pan', 'zoom', 'zoomwin', 'zoomext', 'zoomsel', '-', 'poscam', 'look', 'walk']],
+      [tr('카메라'), ['prevview', { label: tr('표준 보기'), sub: ['iso', 'top', 'bottom', 'front', 'back', 'left', 'right'] }, '-', 'ortho', 'persp', 'fov', '-', 'orbit', 'pan', 'zoom', 'zoomwin', 'zoomext', 'zoomsel', '-', 'poscam', 'look', 'walk', '-', 'render']],
       [tr('그리기'), ['line', 'freehand', 'rect', 'rotrect', 'circle', 'polygon', 'arc', 'arcc', 'pie']],
       [tr('도구'), ['select', 'eraser', 'paint', '-', 'move', 'rotate', 'scale', 'pushpull', 'followme', 'offset', '-', 'tape', 'protractor', 'dimension', 'text', 'section', '-', 'intersect-model', 'purge']],
       [tr('창'), ['panel-info', 'panel-materials', 'panel-components', 'panel-layers', 'panel-outliner', 'panel-scenes', 'panel-styles', 'panel-shadows', 'panel-model', '-', 'devtools']],
@@ -317,7 +321,8 @@ export class UI {
       btn('iso', 'iso', tr('등각 보기')), btn('top', 'top', tr('위')), btn('front', 'front', tr('앞')), btn('right', 'right', tr('오른쪽')), btn('back', 'back', tr('뒤')), btn('left', 'left', tr('왼쪽')), btn('prev', 'prevview', tr('이전 보기')), sep(),
       btn('persp', 'persp', tr('원근'), 'tog'), btn('ortho', 'ortho', tr('평행 투영'), 'tog'), sep(),
       btn('xray', 'xray', 'X-ray', 'tog'), btn('wire', 'face-wire', tr('선만'), 'tog'), btn('hiddenline', 'face-hidden', tr('숨은 선'), 'tog'), btn('shaded', 'face-shaded', tr('색 음영'), 'tog'), btn('textured', 'face-textured', tr('재질 음영'), 'tog'), btn('mono', 'face-mono', tr('단색'), 'tog'), sep(),
-      btn('shadow', 'shadows', tr('그림자'), 'tog'), btn('sectioncut', 'sectioncuts', tr('단면 자르기'), 'tog'),
+      btn('shadow', 'shadows', tr('그림자'), 'tog'), btn('sectioncut', 'sectioncuts', tr('단면 자르기'), 'tog'), sep(),
+      h('button', { class: 'tb wide', title: tr('렌더링: 지금 화면을 사진처럼 (F9)'), 'data-cmd': 'render', html: ICONS.render + '<span>' + tr('렌더링') + '</span>', onclick: () => this.runCommand('render') }),
     );
     this.syncToggles();
   }
@@ -678,6 +683,7 @@ export class UI {
         const solid = d.ents.solidInfo();
         if (solid && !d.ents.insts.size) body.append(row(tr('부피'), ro(fmtVol(solid.volume * Math.abs(x.m.determinant())))));
         body.append(row(tr('재질'), this.matChip(x.mat, false, (m) => app.commit(tr('칠하기'), () => { x.mat = m; ents.touch(); }))));
+        if (defLights(d).length) this.lightRows(body, row, x, d, ents);
         body.append(row(tr('태그'), layerSel(x.layer, setLayerAll)));
         body.append(row(tr('잠금'), h('input', { type: 'checkbox', checked: x.locked, onchange: (e) => app.commit(tr('잠금'), () => { x.locked = e.target.checked; ents.touch(); }) })));
         body.append(row(tr('숨김'), h('input', { type: 'checkbox', checked: x.hidden, onchange: (e) => app.commit(tr('숨김'), () => { x.hidden = e.target.checked; ents.touch(); }) })));
@@ -771,6 +777,20 @@ export class UI {
     app.setCurMat(id);
     this.editMaterial(id);
   }
+  // 조명 컴포넌트: 켜기, 밝기(루멘), 색온도. 렌더링할 때 빛이 됨
+  lightRows(body, row, x, d, ents) {
+    const app = this.app, st = instLight(x, d), k0 = st.k || defKelvin(d);
+    const setLit = (patch) => app.commit(tr('조명 바꾸기'), () => { x.lit = { ...(x.lit || {}), ...patch }; ents.touch(); });
+    const temp = h('select', { onchange: (e) => setLit({ k: +e.target.value }) });
+    const temps = TEMPS.some(([k]) => k === k0) ? TEMPS : [...TEMPS, [k0, k0 + 'K']];
+    for (const [k, label] of temps) temp.append(h('option', { value: k, selected: k === k0 }, label));
+    body.append(h('div', { class: 'title', style: { marginTop: '6px' } }, tr('조명 (렌더링에서 빛남)')));
+    body.append(row(tr('켜기'), h('input', { type: 'checkbox', checked: st.on, onchange: (e) => setLit({ on: e.target.checked }) })));
+    body.append(row(tr('밝기 (lm)'), h('input', { type: 'number', min: 0, step: 50, value: Math.round(st.lm), title: tr('루멘. 전구 800, 다운라이트 700, 방등 3000~5000쯤'), onchange: (e) => setLit({ lm: Math.max(0, +e.target.value || 0) }) })));
+    body.append(row(tr('색온도'), temp));
+    const same = app.model.instancesOf(x.def).length;
+    if (same > 1) body.append(h('div', { class: 'btns' }, h('button', { class: 'btn', title: tr('이 컴포넌트가 놓인 곳 전부를 이 설정으로'), onclick: () => app.commit(tr('조명 바꾸기'), () => { for (const { ents: e2, inst } of app.model.instancesOf(x.def)) { inst.lit = x.lit ? { ...x.lit } : null; e2.touch(); } }) }, tr`같은 조명 ${same}개 모두에 적용`)));
+  }
   editMaterial(id) {
     const app = this.app;
     const m = app.model.materials.get(id);
@@ -788,7 +808,16 @@ export class UI {
     const gloss = h('input', { type: 'range', min: 0, max: 1, step: 0.05, oninput: (e) => { d.rough = +(1 - e.target.value).toFixed(2); upd(); } });
     const metal = h('input', { type: 'range', min: 0, max: 1, step: 0.05, oninput: (e) => { d.metal = +e.target.value; upd(); } });
     const bump = h('input', { type: 'range', min: 0, max: 2, step: 0.1, oninput: (e) => { d.bump = +e.target.value; } });
-    const sync = () => { const p = matPBR(d); gloss.value = 1 - p.rough; metal.value = p.metal; bump.value = d.bump ?? (d.lib && hasImg() ? 1 : 0); };
+    // 렌더링용: 스스로 빛남(cd/m²), 뒤에서 오는 빛이 비침(조명 갓·커튼)
+    const EMITS = [[0, tr('없음')], [300, tr('약하게 (화면·간판)')], [2500, tr('보통 (LED 면)')], [6000, tr('강하게 (전구)')]];
+    const emit = h('select', { onchange: (e) => { d.emit = +e.target.value; } });
+    const trans = h('input', { type: 'range', min: 0, max: 0.9, step: 0.05, oninput: (e) => { d.trans = +e.target.value; } });
+    const sync = () => {
+      const p = matPBR(d); gloss.value = 1 - p.rough; metal.value = p.metal; bump.value = d.bump ?? (d.lib && hasImg() ? 1 : 0); trans.value = p.trans;
+      emit.innerHTML = '';
+      const list = EMITS.some(([v]) => v === p.emit) ? EMITS : [...EMITS, [p.emit, p.emit + ' cd/m²']];
+      for (const [v, label] of list) emit.append(h('option', { value: v, selected: v === p.emit }, label));
+    };
     const upd = () => {
       paintSwatch(prev, d, d.color);
       prev.style.opacity = d.opacity;
@@ -802,7 +831,7 @@ export class UI {
     const unlink = () => { if (d.lib) { const p = matPBR(d); d.rough = +p.rough.toFixed(2); d.metal = p.metal; delete d.lib; } delete d.bump; };
     const imgBtn = h('button', { class: 'btn', onclick: async () => { const url = await IO.pickImage(app); if (url) { unlink(); d.tex = url; sync(); upd(); } } }, tr('그림 불러오기'));
     const noImg = h('button', { class: 'btn', title: tr('무늬 없이 색만 남김'), onclick: () => { unlink(); d.tex = null; sync(); upd(); } }, tr('그림 빼기'));
-    const reset = h('button', { class: 'btn', title: tr('광택·금속·울퉁불퉁을 처음 값으로'), onclick: () => { delete d.rough; delete d.metal; delete d.bump; sync(); upd(); } }, tr('빛 반응 처음대로'));
+    const reset = h('button', { class: 'btn', title: tr('광택·금속·울퉁불퉁·빛 내기·빛 비침을 처음 값으로'), onclick: () => { delete d.rough; delete d.metal; delete d.bump; delete d.emit; delete d.trans; sync(); upd(); } }, tr('빛 반응 처음대로'));
     sync();
     upd();
     const body = h('div', { class: 'form' }, prev,
@@ -812,6 +841,8 @@ export class UI {
       h('div', { class: 'row', title: tr('왼쪽 = 무광, 오른쪽 = 거울처럼 반짝') }, h('label', {}, tr('광택')), gloss),
       h('div', { class: 'row', title: tr('쇠붙이처럼 둘레를 비추는 정도') }, h('label', {}, tr('금속')), metal),
       h('div', { class: 'row', title: tr('무늬의 홈과 결이 도드라지는 정도 (무늬나 그림이 있을 때만)') }, h('label', {}, tr('울퉁불퉁')), bump),
+      h('div', { class: 'row', title: tr('렌더링할 때 스스로 빛나게 (전구·LED·TV 화면)') }, h('label', {}, tr('빛 내기')), emit),
+      h('div', { class: 'row', title: tr('렌더링할 때 뒤에서 오는 빛이 비치는 정도 (조명 갓·얇은 커튼·한지)') }, h('label', {}, tr('빛 비침')), trans),
       h('div', { class: 'row' }, h('label', {}, tr('무늬 가로(mm)')), tw),
       h('div', { class: 'row' }, h('label', {}, tr('무늬 세로(mm)')), th),
       h('div', { class: 'btns' }, imgBtn, noImg, reset));

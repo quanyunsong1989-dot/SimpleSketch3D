@@ -957,7 +957,7 @@ export class Entities {
   // ----- 인스턴스(그룹/컴포넌트 놓인 것) -----
   addInstance(defId, m, props = {}) {
     const id = this.nid();
-    this.insts.set(id, { id, def: defId, m: m.clone(), name: props.name || '', layer: props.layer || 0, hidden: !!props.hidden, mat: props.mat ?? null, locked: !!props.locked });
+    this.insts.set(id, { id, def: defId, m: m.clone(), name: props.name || '', layer: props.layer || 0, hidden: !!props.hidden, mat: props.mat ?? null, locked: !!props.locked, lit: props.lit ? { ...props.lit } : null });
     this.touch();
     return id;
   }
@@ -1083,7 +1083,7 @@ export class Entities {
     for (const x of this.verts.values()) v.push(x.id, x.p.x, x.p.y, x.p.z);
     for (const x of this.edges.values()) e.push([x.id, x.a, x.b, (x.soft ? 1 : 0) | (x.smooth ? 2 : 0) | (x.hidden ? 4 : 0), x.layer, x.curve]);
     for (const x of this.faces.values()) f.push([x.id, x.loops.map((L) => L.slice()), x.mat, x.back, x.layer, x.hidden ? 1 : 0]);
-    for (const x of this.insts.values()) i.push({ id: x.id, def: x.def, m: x.m.elements.slice(), name: x.name, layer: x.layer, hidden: x.hidden, mat: x.mat, locked: x.locked });
+    for (const x of this.insts.values()) i.push({ id: x.id, def: x.def, m: x.m.elements.slice(), name: x.name, layer: x.layer, hidden: x.hidden, mat: x.mat, locked: x.locked, ...(x.lit ? { lit: { ...x.lit } } : {}) });
     for (const x of this.guides.values()) g.push({ id: x.id, kind: x.kind, p: x.p.toArray(), d: x.d ? x.d.toArray() : null, layer: x.layer, hidden: x.hidden });
     for (const x of this.dims.values()) d.push({ id: x.id, a: x.a.toArray(), b: x.b.toArray(), off: x.off.toArray(), text: x.text || '', layer: x.layer, hidden: x.hidden });
     for (const x of this.texts.values()) t.push({ id: x.id, p: x.p.toArray(), off: x.off.toArray(), text: x.text, layer: x.layer, hidden: x.hidden });
@@ -1118,7 +1118,7 @@ export class Entities {
       this.faces.set(x.id, x);
       this.refreshNormal(x);
     }
-    for (const r of j.i || []) this.insts.set(r.id, { id: r.id, def: r.def, m: new THREE.Matrix4().fromArray(r.m), name: r.name || '', layer: r.layer || 0, hidden: !!r.hidden, mat: r.mat ?? null, locked: !!r.locked });
+    for (const r of j.i || []) this.insts.set(r.id, { id: r.id, def: r.def, m: new THREE.Matrix4().fromArray(r.m), name: r.name || '', layer: r.layer || 0, hidden: !!r.hidden, mat: r.mat ?? null, locked: !!r.locked, lit: r.lit ? { ...r.lit } : null });
     for (const r of j.g || []) this.guides.set(r.id, { id: r.id, kind: r.kind, p: new V3().fromArray(r.p), d: r.d ? new V3().fromArray(r.d) : null, layer: r.layer || 0, hidden: !!r.hidden });
     for (const r of j.d || []) this.dims.set(r.id, { id: r.id, a: new V3().fromArray(r.a), b: new V3().fromArray(r.b), off: new V3().fromArray(r.off), text: r.text || '', layer: r.layer || 0, hidden: !!r.hidden });
     for (const r of j.t || []) this.texts.set(r.id, { id: r.id, p: new V3().fromArray(r.p), off: new V3().fromArray(r.off), text: r.text, layer: r.layer || 0, hidden: !!r.hidden });
@@ -1155,6 +1155,7 @@ export class Model {
   copyDef(d, name) {
     const nd = this.newDef(name || d.name, d.isGroup);
     nd.desc = d.desc;
+    if (d.lights) nd.lights = JSON.parse(JSON.stringify(d.lights));
     const e = d.ents;
     nd.ents.importFrom(e, { faces: [...e.faces.keys()], edges: [...e.edges.keys()], insts: [...e.insts.keys()], guides: [...e.guides.keys()], dims: [...e.dims.keys()], texts: [...e.texts.keys()] }, new THREE.Matrix4(), { uniqueGroups: true });
     return nd;
@@ -1199,7 +1200,7 @@ export class Model {
     return {
       nextId: this.nextId,
       root: this.root.toJSON(),
-      defs: [...this.defs.values()].map((d) => ({ id: d.id, name: d.name, isGroup: d.isGroup, desc: d.desc, lib: d.lib || '', ents: d.ents.toJSON() })),
+      defs: [...this.defs.values()].map((d) => ({ id: d.id, name: d.name, isGroup: d.isGroup, desc: d.desc, lib: d.lib || '', ...(d.lights ? { lights: JSON.parse(JSON.stringify(d.lights)) } : {}), ents: d.ents.toJSON() })),
       materials: [...this.materials.values()].map((m) => ({ ...m })),
       layers: this.layers.map((l) => ({ ...l })),
       scenes: JSON.parse(JSON.stringify(this.scenes)),
@@ -1220,6 +1221,7 @@ export class Model {
       } else {
         d = { ...d, name: sd.name, isGroup: sd.isGroup, desc: sd.desc, lib: sd.lib || '' };
       }
+      if (sd.lights) d.lights = JSON.parse(JSON.stringify(sd.lights)); else delete d.lights;
       nd.set(sd.id, d);
     }
     this.defs = nd;

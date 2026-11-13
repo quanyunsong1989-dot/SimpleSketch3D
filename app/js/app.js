@@ -722,7 +722,7 @@ export class App {
     collect(tmp.root);
     const bb = tmp.root.bbox();
     // model·nextId·layers: 다른 파일에 붙여 넣을 때 번호를 그 파일 번호로 바꾸려고 같이 담음
-    this.clipboard = { data: tmp.root.toJSON(), defs: [...defs.values()].map((d) => ({ id: d.id, name: d.name, isGroup: d.isGroup, desc: d.desc, lib: d.lib || '', ents: d.ents.toJSON() })), mats: [...this.model.materials.values()].map((m) => ({ ...m })), layers: this.model.layers.map((l) => ({ ...l })), model: this.model, nextId: this.model.nextId, center: bb.isEmpty() ? new V3() : bb.getCenter(new V3()).setZ(bb.min.z), origPath: this.activePath.slice() };
+    this.clipboard = { data: tmp.root.toJSON(), defs: [...defs.values()].map((d) => ({ id: d.id, name: d.name, isGroup: d.isGroup, desc: d.desc, lib: d.lib || '', lights: d.lights, ents: d.ents.toJSON() })), mats: [...this.model.materials.values()].map((m) => ({ ...m })), layers: this.model.layers.map((l) => ({ ...l })), model: this.model, nextId: this.model.nextId, center: bb.isEmpty() ? new V3() : bb.getCenter(new V3()).setZ(bb.min.z), origPath: this.activePath.slice() };
     if (cut) this.eraseSelection();
     this.toast(cut ? tr('잘라 냈어') : tr('복사했어'));
   }
@@ -743,7 +743,7 @@ export class App {
         ad.fix(src.root);
         // 또 붙여 넣을 땐 이 모델 것으로 다룸 (같은 컴포넌트가 또 생기지 않게)
         cb.data = src.root.toJSON();
-        cb.defs = [...ad.defMap.values()].map((id) => this.model.defs.get(id)).map((d) => ({ id: d.id, name: d.name, isGroup: d.isGroup, desc: d.desc, lib: d.lib || '', ents: d.ents.toJSON() }));
+        cb.defs = [...ad.defMap.values()].map((id) => this.model.defs.get(id)).map((d) => ({ id: d.id, name: d.name, isGroup: d.isGroup, desc: d.desc, lib: d.lib || '', lights: d.lights, ents: d.ents.toJSON() }));
         cb.mats = [...this.model.materials.values()].map((m) => ({ ...m }));
         cb.layers = this.model.layers.map((l) => ({ ...l }));
         cb.model = this.model;
@@ -756,6 +756,7 @@ export class App {
             const nd = this.model.newDef(d.name, d.isGroup);
             nd.desc = d.desc || '';
             nd.lib = d.lib || '';
+            if (d.lights) nd.lights = JSON.parse(JSON.stringify(d.lights));
             nd.ents.load(d.ents);
             idMap.set(d.id, nd.id);
             made.push(nd);
@@ -818,6 +819,7 @@ export class App {
     const d = this.model.newDef(c.name, false);
     d.lib = key;
     d.desc = c.desc || '';
+    if (c.lights) d.lights = JSON.parse(JSON.stringify(c.lights));
     const M = (k) => this.ensureLibMaterial(k);
     c.build(d.ents, M);
     if (COMPONENT_CUTS[key]) d.cut = COMPONENT_CUTS[key];

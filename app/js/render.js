@@ -34,7 +34,7 @@ void main(){
 
 const WHITE = new THREE.Color(1, 1, 1);
 // 기본 재질의 색을 바꿨으면 무늬에 그만큼 색을 입힌다 (안 바꿨으면 흰색 = 무늬 그대로)
-function tintOf(color, libColor) {
+export function tintOf(color, libColor) {
   const a = new THREE.Color(color), b = new THREE.Color(libColor);
   const k = (x, y) => (Math.abs(x - y) < 1e-4 ? 1 : Math.min(2, x / Math.max(y, 0.02)));
   return new THREE.Color(k(a.r, b.r), k(a.g, b.g), k(a.b, b.b));
@@ -266,6 +266,7 @@ export class SceneRenderer {
       const it = mr.lib ? libItem(mr.lib) : null, p = matPBR(mr);
       const par = { color: mr.color, roughness: p.rough, metalness: p.metal, side: sd };
       m = p.sheen > 0 ? new THREE.MeshPhysicalMaterial({ ...par, sheen: p.sheen, sheenRoughness: 0.5, sheenColor: new THREE.Color(mr.color).lerp(WHITE, 0.35) }) : new THREE.MeshStandardMaterial(par);
+      if (p.emit > 0) { m.emissive.set(mr.color); m.emissiveIntensity = Math.min(1, 0.45 + p.emit / 8000); }      // 전구·LED: 그늘에서도 환하게
       const tk = st.face === 'textured' ? this.texKey(mr, it) : null;
       if (tk) {
         // 그림은 준비되는 대로 입힌다 (그때까지는 색만)
